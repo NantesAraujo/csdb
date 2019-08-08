@@ -1,25 +1,22 @@
-const MongoClient = require('mongodb').MongoClient;
+require('dotenv').config()
 const express = require('express')
 const app = express();
 const bodyparser = require('body-parser')
+const conexaoBD = require('./conexaoBD')
 
-const uri = "mongodb+srv://carlos:Carlos123@cluster0-2tbfp.mongodb.net/test?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useNewUrlParser: true });
+const port = process.env.port || 3000
 
 app.use(bodyparser.urlencoded({extended: true}))
 app.use(bodyparser.json())
 
-app.post('/users', (req, res) => {
+app.post('/users', async (req, res) => {
     var user = req.body;
-    console.log('body');
-    console.log(user);
-
-    client.connect(err => {
-        const collection = client.db('csdb').collection('usuarios').insertOne(user);
-        client.close();
-      });
-
-    res.status(200).send("slvo com sucesso!");
+    const conn = await conexaoBD();
+    conn.collection('usuarios').insertOne(user);    
+    res.status(200).send("salvo com sucesso!");
 })
 
-app.listen(3000, function() { console.log('servidor rodando na porta: '); });
+app.listen(port, function() { 
+  console.log('servidor rodando na porta: ' + port); 
+  console.log(process.env.MONGODB_URI);
+});
